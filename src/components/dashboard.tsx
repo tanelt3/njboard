@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { layoutTeamBubbles } from "@/lib/bubble-layout";
+import { layoutTeamBars } from "@/lib/bar-layout";
 import type { DashboardData, Team } from "@/lib/sheet-model";
 
 const REFRESH_MS = 30_000;
@@ -48,11 +49,45 @@ function BubbleChart({ teams }: { teams: Team[] }) {
   );
 }
 
+function BarChart({ teams }: { teams: Team[] }) {
+  const { bars, ticks, zeroY } = useMemo(() => layoutTeamBars(teams), [teams]);
+  const axisMoney = (cents: number) => new Intl.NumberFormat("en-IE", {
+    style: "currency", currency: "EUR", notation: "compact", maximumFractionDigits: 1,
+  }).format(cents / 100);
+
+  return (
+    <svg className="bar-chart" viewBox="0 0 640 540" role="img" aria-label="Annual savings by team. Bar heights use a linear euro scale; labels show exact savings.">
+      {ticks.map((tick) => (
+        <g key={tick.value} className="bar-tick" aria-hidden="true">
+          <line x1="76" x2="628" y1={tick.y} y2={tick.y} stroke="#ded9cf" strokeDasharray="3 6" />
+          <text x="62" y={tick.y + 5} textAnchor="end" fill="#8b877e" fontSize="14">{axisMoney(tick.value)}</text>
+        </g>
+      ))}
+      <line x1="76" x2="628" y1={zeroY} y2={zeroY} stroke="#bcb5a8" />
+      {bars.map((bar, index) => {
+        const amount = money(bar.team.totalCents);
+        const name = bar.team.name.length > 10 ? `${bar.team.name.slice(0, 9)}…` : bar.team.name;
+        return (
+          <g className="team-bar" key={bar.team.name}>
+            <title>{bar.team.name}: {amount} · {countLabel(bar.team.initiatives)}</title>
+            <rect x={bar.x - bar.width / 2} y={bar.y} width={bar.width} height={bar.height} rx="5" fill={COLORS[index]} />
+            {bar.height < 2 && <line x1={bar.x - bar.width / 2} x2={bar.x + bar.width / 2} y1={bar.valueY} y2={bar.valueY} stroke={COLORS[index]} strokeWidth="2" />}
+            <text className="bar-amount" x={bar.x} y={bar.labelY} textAnchor="middle" fill="#000000" fontSize={Math.min(22, bar.labelWidth / (amount.length * 0.62))} fontWeight="800">{amount}</text>
+            <text x={bar.x} y="480" textAnchor="middle" fill="#000000" fontSize="17" fontWeight="600">{name}</text>
+            <text x={bar.x} y="504" textAnchor="middle" fill="#8b877e" fontSize="13">{countLabel(bar.team.initiatives)}</text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
 export default function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [chartType, setChartType] = useState<"bubbles" | "bars">("bubbles");
   const [goal, setGoal] = useState(DEFAULT_GOAL);
   const [goalError, setGoalError] = useState("");
   const goalDialog = useRef<HTMLDialogElement>(null);
@@ -128,12 +163,26 @@ export default function Dashboard() {
 
       <div className="board-content">
         <section className="chart-pane" aria-label="Team contributions">
-          {data?.teams.length ? <BubbleChart teams={topTeams} /> : (
+          <div className="chart-toolbar">
+            <div className="chart-toggle" role="group" aria-label="Chart type">
+              <button type="button" aria-pressed={chartType === "bubbles"} aria-controls="team-chart" onClick={() => setChartType("bubbles")}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true"><circle cx="8" cy="9" r="5" /><circle cx="17" cy="16" r="4" /><circle cx="6" cy="19" r="2" /></svg>
+                Bubbles
+              </button>
+              <button type="button" aria-pressed={chartType === "bars"} aria-controls="team-chart" onClick={() => setChartType("bars")}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7" /></svg>
+                Bars
+              </button>
+            </div>
+          </div>
+          <div id="team-chart">
+          {data?.teams.length ? (chartType === "bubbles" ? <BubbleChart teams={topTeams} /> : <BarChart teams={topTeams} />) : (
             <div className="empty-state" role="status">
               {loading && !data && <span className="loading-orbit" />}
               <p>{data ? "No initiatives yet." : loading ? "Loading team savings…" : "Waiting for data."}</p>
             </div>
           )}
+          </div>
         </section>
 
         <section className="ranking" aria-label="Savings by team">

@@ -18,7 +18,12 @@ button:disabled { opacity: .5; cursor: wait; }
 .board { min-height: 100svh; padding: 30px; display: grid; align-content: center; background: #f4f0e9; }
 .board-content { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, .85fr); align-items: center; gap: 32px; }
 .chart-pane { min-width: 0; }
-.bubble-chart { display: block; width: 100%; height: auto; max-height: calc(100svh - 90px); }
+.chart-toolbar { display: flex; justify-content: center; margin-bottom: 16px; }
+.chart-toggle { display: inline-flex; gap: 4px; padding: 4px; border: 1px solid #ded9cf; border-radius: 30px; background: #eae5dc; }
+.chart-toggle button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 38px; padding: 8px 18px; border: 0; border-radius: 24px; background: transparent; color: #6b665e; font-size: 13px; font-weight: 700; transition: background .15s ease, color .15s ease; }
+.chart-toggle button:hover { color: #000; background: #ded9cf; }
+.chart-toggle button[aria-pressed="true"] { background: #ff9408; color: #000; }
+.bubble-chart, .bar-chart { display: block; width: 100%; height: auto; max-height: calc(100svh - 150px); }
 .bubble-chart text { pointer-events: none; }
 .ranking { min-width: 0; }
 .total-value { margin: 0 0 7px; font-size: clamp(34px, 3.2vw, 58px); line-height: 1.1; font-weight: 800; letter-spacing: -1.8px; font-variant-numeric: tabular-nums; }
@@ -63,4 +68,5 @@ button:disabled { opacity: .5; cursor: wait; }
 @media (max-width: 1150px) { .board { padding: 22px; }.board-content { gap: 20px; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, .85fr); }.goal-section { padding-left: 20px; }.ranking-row { gap: 10px; padding: 15px 6px; }.team-name, .team-value, .team-share { font-size: 12px; }.team-value { min-width: 50px; }.total-caption { font-size: 9px; letter-spacing: 1.5px; }.goal-subtitle { font-size: 11px; } }
 @media (max-width: 900px) { .board-content { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 26px; }.goal-section { grid-column: 1 / -1; justify-self: center; width: min(100%, 370px); padding: 28px 0 0; border-left: 0; border-top: 1px solid #ded9cf; }.goal-heading h1 { font-size: 21px; }.gauge { margin-top: 20px; }.gauge-label strong { font-size: 60px; }.gauge-label p { font-size: 15px; }.team-name, .team-share, .team-value { font-size: 14px; } }
 @media (max-width: 560px) { .board { padding: 20px 18px 28px; }.board-content { grid-template-columns: minmax(0, 1fr); gap: 28px; }.bubble-chart { max-height: 370px; }.total-value { font-size: 42px; }.total-caption { font-size: 10px; margin-bottom: 20px; }.ranking-row { padding: 17px 8px; }.team-name { font-size: 15px; }.team-share, .team-value { font-size: 14px; }.goal-section { padding-top: 28px; }.goal-heading h1 { font-size: 21px; }.goal-subtitle { font-size: 12px; }.gauge { max-width: 320px; margin: 24px auto 0; }.notice { flex-wrap: wrap; }.goal-dialog { padding: 24px; } }
+@media (max-width: 560px) { .bar-chart { max-height: 370px; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
