@@ -1,7 +1,7 @@
 "use client";
 
-import { hierarchy, pack } from "d3-hierarchy";
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { layoutTeamBubbles } from "@/lib/bubble-layout";
 import type { DashboardData, Team } from "@/lib/sheet-model";
 
 const REFRESH_MS = 30_000;
@@ -22,29 +22,25 @@ function Icon({ name }: { name: "edit" | "close" }) {
 }
 
 function BubbleChart({ teams }: { teams: Team[] }) {
-  const circles = useMemo(() => {
-    type Node = { team?: Team; children?: Node[] };
-    const root = hierarchy<Node>({ children: teams.map((team) => ({ team })) })
-      .sum((node) => node.team ? Math.max(node.team.totalCents, 1) : 0)
-      .sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
-    return pack<Node>().size([640, 540]).padding(16)(root).leaves();
-  }, [teams]);
+  const circles = useMemo(() => layoutTeamBubbles(teams), [teams]);
 
   return (
-    <svg className="bubble-chart" viewBox="0 0 640 540" role="img" aria-label="Annual savings by team. Bubble size represents savings.">
+    <svg className="bubble-chart" viewBox="0 0 640 540" role="img" aria-label="Annual savings by team. Bubble sizes are adjusted for readability; labels show exact savings.">
       {circles.map((circle, index) => {
-        const team = circle.data.team!;
+        const team = circle.team;
         const dark = index === 1 || index === 4;
-        const labelSize = Math.min(25, Math.max(10, circle.r / 6));
-        const valueSize = Math.min(51, Math.max(13, circle.r / 3.2));
-        const small = circle.r < 48;
+        const labelSize = Math.min(25, Math.max(20, circle.r / 5.5));
+        const valueSize = Math.min(51, Math.max(28, circle.r / 2.7));
+        const countSize = Math.min(19, Math.max(16, circle.r / 6.5));
+        const maxNameLength = Math.max(6, Math.floor(circle.r * 1.6 / (labelSize * 0.62)));
+        const name = team.name.length > maxNameLength ? `${team.name.slice(0, maxNameLength - 1)}…` : team.name;
         return (
           <g key={team.name}>
             <title>{team.name}: {money(team.totalCents)} · {countLabel(team.initiatives)}</title>
             <circle cx={circle.x} cy={circle.y} r={circle.r} fill={COLORS[index]} />
-            {!small && <text x={circle.x} y={circle.y - valueSize * 0.75} textAnchor="middle" fill={dark ? "#FFFFFF" : "#000000"} fontSize={labelSize} fontWeight="600">{team.name.length > 18 ? `${team.name.slice(0, 17)}…` : team.name}</text>}
+            <text x={circle.x} y={circle.y - valueSize * 0.85} textAnchor="middle" fill={dark ? "#FFFFFF" : "#000000"} fontSize={labelSize} fontWeight="600">{name}</text>
             <text x={circle.x} y={circle.y + valueSize * 0.35} textAnchor="middle" fill={dark ? "#FFFFFF" : "#000000"} fontSize={Math.min(valueSize, circle.r * 1.65 / (money(team.totalCents).length * 0.6))} fontWeight="800" letterSpacing="-1">{money(team.totalCents)}</text>
-            {!small && <text x={circle.x} y={circle.y + valueSize * 1.18} textAnchor="middle" fill={dark ? "#FFFFFF" : "#000000"} fontSize={Math.max(10, labelSize * 0.67)} opacity="0.75">{countLabel(team.initiatives)}</text>}
+            <text x={circle.x} y={circle.y + valueSize * 1.18} textAnchor="middle" fill={dark ? "#FFFFFF" : "#000000"} fontSize={countSize} opacity="0.75">{countLabel(team.initiatives)}</text>
           </g>
         );
       })}
