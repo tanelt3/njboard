@@ -3,18 +3,31 @@
 @theme inline {
   --color-brand: #ff9408;
   --color-ink: #000000;
-  --color-success: #23c172;
-  --color-petrol: #095d66;
+  --color-success: var(--chart-spring-forest);
+  --color-forest: var(--chart-deep-forest);
   --font-sans: "Trebuchet MS", sans-serif;
 }
 
-:root { color-scheme: light; }
+:root {
+  color-scheme: light;
+  /* HEX values from the supplied Stora Enso chart and graph colour guide. */
+  --chart-deep-forest: #097041;
+  --chart-spring-forest: #23c172;
+  --chart-spring-meadow: #a4edb8;
+  --chart-dark-brown: #743c30;
+  --chart-brown: #c9845e;
+  --chart-light-brown: #f4c8a8;
+  --chart-raspberry: #f78587;
+  --chart-spring-rose: #ffc2c3;
+  --chart-blueberry: #6190ff;
+  --chart-forest-lake: #abc7ff;
+}
 body { margin: 0; background: #f4f0e9; color: #000; font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
 button, input { font: inherit; }
 button { cursor: pointer; }
 button:disabled { opacity: .5; cursor: wait; }
-:focus-visible { outline: 2px solid #095d66; outline-offset: 5px; }
-::selection { background: #ffd59d; color: #000; }
+:focus-visible { outline: 2px solid var(--chart-deep-forest); outline-offset: 5px; }
+::selection { background: var(--chart-light-brown); color: #000; }
 .board { min-height: 100svh; padding: 30px; display: grid; align-content: center; background: #f4f0e9; }
 .board-content { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, .85fr); align-items: center; gap: 32px; }
 .chart-pane { min-width: 0; }
@@ -31,11 +44,10 @@ button:disabled { opacity: .5; cursor: wait; }
 .ranking-list { margin: 0; padding: 12px 0 0; list-style: none; border-top: 1px solid #d9d4ca; }
 .ranking-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 16px; align-items: center; padding: 17px 10px; border-bottom: 1px solid #ded9cf; }
 .ranking-row:last-child { border-bottom: 0; }
-.ranking-row.is-leading { background: #ff940814; }
+.ranking-row.is-leading { background: color-mix(in srgb, var(--chart-deep-forest) 8%, transparent); }
 .team-name { display: flex; gap: 10px; align-items: center; min-width: 0; overflow-wrap: anywhere; font-weight: 700; font-size: 15px; }
 .team-dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
-.team-share { color: #095d66; font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
-.is-leading .team-share { color: #a45b00; }
+.team-share { color: var(--chart-deep-forest); font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .team-value { min-width: 62px; text-align: right; font-size: 14px; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .ranking-note { color: #8b877e; font-size: 11px; line-height: 1.6; margin: 16px 0 0; }
 .goal-section { min-width: 0; padding-left: 30px; border-left: 1px solid #ded9cf; }

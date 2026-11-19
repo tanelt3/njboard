@@ -8,7 +8,15 @@ import type { DashboardData, Team } from "@/lib/sheet-model";
 const REFRESH_MS = 30_000;
 const GOAL_KEY = "njboard.goal.v1";
 const DEFAULT_GOAL = { title: "Annual savings goal", amount: 6000 };
-const COLORS = ["#FF9408", "#095D66", "#23C172", "#FFD59D", "#000000", "#B6E5D5"];
+// Distinct colours from the supplied Stora Enso chart palette, with its text pairings.
+const CHART_COLORS = [
+  { fill: "var(--chart-deep-forest)", text: "#FFFFFF" },
+  { fill: "var(--chart-blueberry)", text: "#000000" },
+  { fill: "var(--chart-spring-forest)", text: "#000000" },
+  { fill: "var(--chart-brown)", text: "#000000" },
+  { fill: "var(--chart-raspberry)", text: "#000000" },
+  { fill: "var(--chart-dark-brown)", text: "#FFFFFF" },
+] as const;
 const money = (cents: number) => new Intl.NumberFormat("en-IE", {
   style: "currency", currency: "EUR", minimumFractionDigits: cents % 100 ? 2 : 0, maximumFractionDigits: 2,
 }).format(cents / 100);
@@ -29,7 +37,7 @@ function BubbleChart({ teams }: { teams: Team[] }) {
     <svg className="bubble-chart" viewBox="0 0 640 540" role="img" aria-label="Annual savings by team. Bubble sizes are adjusted for readability; labels show exact savings.">
       {circles.map((circle, index) => {
         const team = circle.team;
-        const dark = index === 1 || index === 4;
+        const color = CHART_COLORS[index];
         const labelSize = Math.min(25, Math.max(20, circle.r / 5.5));
         const valueSize = Math.min(51, Math.max(28, circle.r / 2.7));
         const countSize = Math.min(19, Math.max(16, circle.r / 6.5));
@@ -38,10 +46,10 @@ function BubbleChart({ teams }: { teams: Team[] }) {
         return (
           <g key={team.name}>
             <title>{team.name}: {money(team.totalCents)} · {countLabel(team.initiatives)}</title>
-            <circle cx={circle.x} cy={circle.y} r={circle.r} fill={COLORS[index]} />
-            <text x={circle.x} y={circle.y - valueSize * 0.85} textAnchor="middle" fill={dark ? "#FFFFFF" : "#000000"} fontSize={labelSize} fontWeight="600">{name}</text>
-            <text x={circle.x} y={circle.y + valueSize * 0.35} textAnchor="middle" fill={dark ? "#FFFFFF" : "#000000"} fontSize={Math.min(valueSize, circle.r * 1.65 / (money(team.totalCents).length * 0.6))} fontWeight="800" letterSpacing="-1">{money(team.totalCents)}</text>
-            <text x={circle.x} y={circle.y + valueSize * 1.18} textAnchor="middle" fill={dark ? "#FFFFFF" : "#000000"} fontSize={countSize} opacity="0.75">{countLabel(team.initiatives)}</text>
+            <circle cx={circle.x} cy={circle.y} r={circle.r} fill={color.fill} />
+            <text x={circle.x} y={circle.y - valueSize * 0.85} textAnchor="middle" fill={color.text} fontSize={labelSize} fontWeight="600">{name}</text>
+            <text x={circle.x} y={circle.y + valueSize * 0.35} textAnchor="middle" fill={color.text} fontSize={Math.min(valueSize, circle.r * 1.65 / (money(team.totalCents).length * 0.6))} fontWeight="800" letterSpacing="-1">{money(team.totalCents)}</text>
+            <text x={circle.x} y={circle.y + valueSize * 1.18} textAnchor="middle" fill={color.text} fontSize={countSize}>{countLabel(team.initiatives)}</text>
           </g>
         );
       })}
@@ -70,8 +78,8 @@ function BarChart({ teams }: { teams: Team[] }) {
         return (
           <g className="team-bar" key={bar.team.name}>
             <title>{bar.team.name}: {amount} · {countLabel(bar.team.initiatives)}</title>
-            <rect x={bar.x - bar.width / 2} y={bar.y} width={bar.width} height={bar.height} rx="5" fill={COLORS[index]} />
-            {bar.height < 2 && <line x1={bar.x - bar.width / 2} x2={bar.x + bar.width / 2} y1={bar.valueY} y2={bar.valueY} stroke={COLORS[index]} strokeWidth="2" />}
+            <rect x={bar.x - bar.width / 2} y={bar.y} width={bar.width} height={bar.height} rx="5" fill={CHART_COLORS[index].fill} />
+            {bar.height < 2 && <line x1={bar.x - bar.width / 2} x2={bar.x + bar.width / 2} y1={bar.valueY} y2={bar.valueY} stroke={CHART_COLORS[index].fill} strokeWidth="2" />}
             <text className="bar-amount" x={bar.x} y={bar.labelY} textAnchor="middle" fill="#000000" fontSize={Math.min(22, bar.labelWidth / (amount.length * 0.62))} fontWeight="800">{amount}</text>
             <text x={bar.x} y="480" textAnchor="middle" fill="#000000" fontSize="17" fontWeight="600">{name}</text>
             <text x={bar.x} y="504" textAnchor="middle" fill="#8b877e" fontSize="13">{countLabel(bar.team.initiatives)}</text>
@@ -191,7 +199,7 @@ export default function Dashboard() {
           <ul className="ranking-list">
             {topTeams.map((team, index) => (
               <li className={`ranking-row ${index === 0 ? "is-leading" : ""}`} key={team.name}>
-                <span className="team-name"><span className="team-dot" style={{ background: COLORS[index] }} />{team.name}</span>
+                <span className="team-name"><span className="team-dot" style={{ background: CHART_COLORS[index].fill }} />{team.name}</span>
                 <span className="team-share">{total > 0 ? `${(team.totalCents / total * 100).toLocaleString("en-GB", { maximumFractionDigits: 1 })}%` : "—"}</span>
                 <span className="team-value">{money(team.totalCents)}</span>
               </li>
@@ -209,7 +217,7 @@ export default function Dashboard() {
           <div className="gauge" role="img" aria-label={data ? `${Math.round(percentage)} percent of goal reached: ${money(total)} of ${money(goal.amount * 100)}` : "Goal progress is loading"}>
             <svg viewBox="0 0 320 195" aria-hidden="true">
               <path d="M30 165 A130 130 0 0 1 290 165" fill="none" stroke="#E7E2D6" strokeWidth="26" strokeLinecap="round" />
-              <path d="M30 165 A130 130 0 0 1 290 165" fill="none" stroke="#FF9408" strokeWidth="26" strokeLinecap="round" pathLength="100" strokeDasharray={`${progress} 100`} opacity={progress > 0 ? 1 : 0} />
+              <path d="M30 165 A130 130 0 0 1 290 165" fill="none" stroke="var(--chart-deep-forest)" strokeWidth="26" strokeLinecap="round" pathLength="100" strokeDasharray={`${progress} 100`} opacity={progress > 0 ? 1 : 0} />
             </svg>
             <div className="gauge-label">
               <strong>{data ? Math.round(percentage).toLocaleString("en-GB") : "—"}<span>%</span></strong>
