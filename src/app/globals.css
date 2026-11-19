@@ -35,7 +35,7 @@ button:disabled { opacity: .5; cursor: wait; }
 .chart-toggle { display: inline-flex; gap: 4px; padding: 4px; border: 1px solid #ded9cf; border-radius: 30px; background: #eae5dc; }
 .chart-toggle button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 38px; padding: 8px 18px; border: 0; border-radius: 24px; background: transparent; color: #6b665e; font-size: 13px; font-weight: 700; transition: background .15s ease, color .15s ease; }
 .chart-toggle button:hover { color: #000; background: #ded9cf; }
-.chart-toggle button[aria-pressed="true"] { background: #ff9408; color: #000; }
+.chart-toggle button[aria-pressed="true"] { background: var(--chart-deep-forest); color: #fff; }
 .bubble-chart, .bar-chart { display: block; width: 100%; height: auto; max-height: calc(100svh - 150px); }
 .bubble-chart text { pointer-events: none; }
 .ranking { min-width: 0; }
